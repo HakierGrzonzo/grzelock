@@ -1,0 +1,5 @@
+# default config for grzelock
+ResX: 2560
+ResY: 1080
+Background: "/home/hakiergrzonzo/Desktop/programy/grzelock/background.png"
+Font: "futura light bt.ttf"

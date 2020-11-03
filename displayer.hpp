@@ -1,9 +1,11 @@
 #pragma once
 
-struct res
+struct Settings
 {
-    unsigned int x;
-    unsigned int y;
+    unsigned int resX;
+    unsigned int resY;
+    const char* background;
+    const char* font;
 };
 
-void lockScreen(res screen);
+void lockScreen(Settings settings);

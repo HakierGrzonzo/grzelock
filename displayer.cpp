@@ -18,6 +18,14 @@ struct res
     unsigned int y;
 };
 
+struct Settings
+{
+    unsigned int resX;
+    unsigned int resY;
+    const char* background;
+    const char* font;
+};
+
 enum unlockStatus
 {
     _null = 0,
@@ -75,21 +83,24 @@ void centerOrigin(sf::Text* textptr, bool onlyY = false)
     textptr->setOrigin(newOrigin);
 }
 
-void lockScreen(res screen)
+void lockScreen(Settings settings)
 {
-    sf::ContextSettings settings;
-    settings.antialiasingLevel = 2;
-
-    sf::RenderWindow window(sf::VideoMode(screen.x, screen.y), "grzeLock", sf::Style::Close | sf::Style::Fullscreen, settings);
+    sf::ContextSettings settingsSFML;
+    settingsSFML.antialiasingLevel = 2;
+    res screen;
+    screen.x = settings.resX;
+    screen.y = settings.resY;
+    sf::RenderWindow window(sf::VideoMode(screen.x, screen.y), "grzeLock", sf::Style::Close | sf::Style::Fullscreen, settingsSFML);
     window.setVerticalSyncEnabled(true);
     
     // Handle background
 
     sf::Texture background;
-    if (!background.loadFromFile("background.png"))
+    if (!background.loadFromFile(settings.background))
     {
         // on failure create something
         background.create(screen.x, screen.y);
+        std::cerr << "Failed to open background file " << settings.background << std::endl;
     }
     background.setSmooth(true);
 
@@ -100,9 +111,10 @@ void lockScreen(res screen)
     // handle clock font
 
     sf::Font clockFont;
-    if (!clockFont.loadFromFile("futura light bt.ttf"))
+    if (!clockFont.loadFromFile(settings.font))
     {
-        std::cout << "I can not proceed without clock font, Exiting!" << std::endl;
+        std::cout << "I can not proceed without font, Exiting!" << std::endl;
+        window.close();
         return;
     }
 

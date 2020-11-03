@@ -1,38 +1,85 @@
 #include <iostream>
-#include <vector>
 #include <string>
 #include "displayer.hpp"
+#include <yaml.h>
+#include <cstring>
+
+//#define DEBUG
+
+#ifdef DEBUG
+    #define ConfigPath "grzelock.yml"
+#else
+    #define ConfigPath "~/.config/grzelock.yml"
+#endif
+
+enum parserState
+{
+    SeekingKey,
+    SeekingKeyField,
+    SeekingValue,
+    SeekingValueField
+};
 
 int main (int argc, char** argv)
 {   
-    std::vector<std::string> args;
-    for (int i = 0; i < argc; i++)
+    yaml_parser_t parser;
+    yaml_token_t token;
+    FILE *config = fopen(ConfigPath, "rb");
+
+    if(!yaml_parser_initialize(&parser))
     {
-        int j = 0;
-        std::string argument;
-        while (argv[i][j] != '\0') argument.push_back(argv[i][j++]);
-        args.push_back(argument);
+        std::cerr << "Failed to initialize parser" << std::endl;
+        return 1;
     }
-    res screen;
-    if (args.size() != 3)
+    if(config == NULL)
     {
-        screen.x = 1366;
-        screen.y = 768;
+        std::cerr << "Config file can not be opened, please make sure that " << ConfigPath << " exists!" << std::endl;
+        return 1;
     }
-    else
-    {
-        try
-        {
-            screen.x = std::stoi(args[1]);
-            screen.y = std::stoi(args[2]);
+    yaml_parser_set_input_file(&parser, config);
+
+    std::string lastKey;
+    parserState state;
+    state = SeekingKey;
+    Settings settings;
+
+    do {
+        yaml_parser_scan(&parser, &token);
+        switch(token.type)
+        {   
+            case YAML_KEY_TOKEN:
+                if (state == SeekingKey)
+                    state = SeekingKeyField;
+                break;
+            case YAML_VALUE_TOKEN:
+                if (state == SeekingValue)
+                    state = SeekingValueField;
+                break;
+            case YAML_SCALAR_TOKEN:
+                if (state == SeekingKeyField)
+                {
+                    const char* key = (char*) token.data.scalar.value;
+                    lastKey = std::string(key);
+                    state = SeekingValue;
+                }
+                else if (state == SeekingValueField)
+                {
+                    const char* val = (char*) token.data.scalar.value;
+                    if (lastKey == "ResX") settings.resX = std::stoi(val);
+                    else if (lastKey == "ResY") settings.resY = std::stoi(val);
+                    else if (lastKey == "Background") settings.background = strdup(val);
+                    else if (lastKey == "Font") settings.font = strdup(val);
+                    state = SeekingKey;
+                }
+
+
+            default:
+                break;
         }
-        catch (const std::invalid_argument& e)
-        {
-            screen.x = 1366;
-            screen.y = 768;
-        }
-    }
-    std::cout << "Setting resolution to " << screen.x << "x" << screen.y << std::endl;
-    lockScreen(screen);
+    } while (token.type != YAML_STREAM_END_TOKEN);
+    std::cout << "Setting resolution to " << settings.resX << "x" << settings.resY << std::endl;
+    lockScreen(settings);
+    yaml_parser_delete(&parser);
+    fclose(config);
     return 0;
 }
