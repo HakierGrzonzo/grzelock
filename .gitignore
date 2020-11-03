@@ -1,0 +1,6 @@
+*.out
+*.o
+output
+*.png
+.conf
+*.ttf
