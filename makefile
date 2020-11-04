@@ -12,3 +12,6 @@ pamHandler.o: pamHandler.c
 
 clean:
 	rm *.o output
+
+install: output
+	cp output /usr/bin/grzelock

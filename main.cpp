@@ -9,8 +9,9 @@
 #ifdef DEBUG
     #define ConfigPath "grzelock.yml"
 #else
-    #define ConfigPath "~/.config/grzelock.yml"
+    #define ConfigPath  &("/home/" + std::string(std::getenv("USER")) + "/.config/grzelock.yml")[0]
 #endif
+
 
 enum parserState
 {

@@ -10,7 +10,8 @@
 #include <thread>
 #include <cstring>
 
-//#define debug
+// if uncomennted you can close the application
+//#define debug 
 
 struct res
 {
@@ -124,7 +125,7 @@ void lockScreen(Settings settings)
     clock.setFont(clockFont);
     clock.setCharacterSize(125);
     //clock.setOrigin(sf::Vector2f(0, 1));
-    clock.setPosition(sf::Vector2f(30, screen.y - 175));
+    clock.setPosition(sf::Vector2f(30, screen.y - 135));
     clock.setFillColor(sf::Color::White);
 
     // handle date
